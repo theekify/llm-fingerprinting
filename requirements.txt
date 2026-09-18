@@ -9,3 +9,4 @@ seaborn
 shap
 jupyter
 tqdm
+joblib
