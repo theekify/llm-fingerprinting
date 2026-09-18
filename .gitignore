@@ -1,0 +1,16 @@
+# venv
+venv/
+__pycache__/
+*.pyc
+
+# data (raw generations can be large; decide if you want to commit or not — see note below)
+# data/*.jsonl
+# data/*.csv
+
+# jupyter
+.ipynb_checkpoints/
+
+# OS
+.DS_Store
+
+# results (keep figures/metrics tracked, but not scratch outputs)

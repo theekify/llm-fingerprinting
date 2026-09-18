@@ -1,0 +1,10 @@
+ollama
+pandas
+numpy
+scikit-learn
+nltk
+textstat
+matplotlib
+seaborn
+shap
+jupyter
