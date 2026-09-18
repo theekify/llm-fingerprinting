@@ -5,10 +5,12 @@ from collections import Counter
 
 import nltk
 import textstat
+from nltk import pos_tag
 
 # one-time downloads (safe to call every run, cached after first time)
 nltk.download("punkt", quiet=True)
 nltk.download("punkt_tab", quiet=True)
+nltk.download("averaged_perceptron_tagger_eng", quiet=True)
 
 from nltk.tokenize import sent_tokenize, word_tokenize
 
@@ -23,6 +25,18 @@ FUNCTION_WORDS = [
     "may", "might", "must", "i", "you", "he", "she", "it", "we", "they",
     "this", "that", "these", "those", "not", "no", "so", "as", "very",
 ]
+
+# Coarse POS categories we care about (Penn Treebank tags grouped)
+POS_GROUPS = {
+    "noun": {"NN", "NNS", "NNP", "NNPS"},
+    "verb": {"VB", "VBD", "VBG", "VBN", "VBP", "VBZ"},
+    "adj": {"JJ", "JJR", "JJS"},
+    "adv": {"RB", "RBR", "RBS"},
+    "pronoun": {"PRP", "PRP$", "WP", "WP$"},
+    "det": {"DT", "PDT", "WDT"},
+    "conj": {"CC"},
+    "prep": {"IN"},
+}
 
 
 def basic_tokenize(text: str):
@@ -96,6 +110,19 @@ def readability_features(text: str) -> dict:
         return {"flesch_reading_ease": 0, "flesch_kincaid_grade": 0}
 
 
+def pos_features(words) -> dict:
+    if not words:
+        return {f"pos_{k}": 0 for k in POS_GROUPS}
+    tagged = pos_tag(words)
+    tag_counts = Counter(tag for _, tag in tagged)
+    n_words = len(words)
+    result = {}
+    for group_name, tag_set in POS_GROUPS.items():
+        group_count = sum(tag_counts.get(t, 0) for t in tag_set)
+        result[f"pos_{group_name}"] = (group_count / n_words) * 100
+    return result
+
+
 def char_trigram_features(text: str, top_k_trigrams: list) -> dict:
     text_clean = text.lower()
     n_total = max(len(text_clean) - 2, 1)
@@ -118,6 +145,7 @@ def extract_features(text: str, top_k_trigrams: list = None) -> dict:
     features.update(function_word_features(words_alpha))
     features.update(vocab_richness_features(words_alpha))
     features.update(readability_features(text))
+    features.update(pos_features(words))
     if top_k_trigrams:
         features.update(char_trigram_features(text, top_k_trigrams))
 
