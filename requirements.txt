@@ -12,3 +12,4 @@ tqdm
 joblib
 torch 
 transformers
+shap
